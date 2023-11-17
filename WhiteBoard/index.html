@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Whiteboard App</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inconsolata:wght@200&family=Martian+Mono:wght@300&family=Roboto+Mono:wght@300&family=Tektur&family=Tulpen+One&display=swap');
+    </style>
+    <style>
+        body {
+            background-color: #1f1f1f;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+        }
+
+        canvas {
+            display: block;
+            background-color: #fff;
+            cursor: crosshair;
+            border: 2px solid #333; /* Add border for a better visual */
+        }
+
+        input[type="color"],
+        select,
+        button {
+            margin-top: 10px;
+            padding: 8px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="color"] {
+            width: 40px;
+        }
+
+        select {
+            width: 150px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .actions-container {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .shape-select {
+            margin-right: 10px;
+        }
+        h1{
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; color: white;">Whiteboard</h1>
+    <canvas id="whiteboard"></canvas>
+    <input type="color" id="colorPicker" value="#000000">
+    
+    <div class="actions-container">
+        <select id="shapeSelector" class="shape-select">
+            <option value="line">Line</option>
+            <option value="rectangle">Rectangle</option>
+            <option value="circle">Circle</option>
+        </select>
+
+        <select id="actionSelector" onchange="performAction()">
+            <option value="">Select Action</option>
+            <option value="download">Download</option>
+            <option value="clear">Clear</option>
+        </select>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('whiteboard');
+        const context = canvas.getContext('2d');
+        const colorPicker = document.getElementById('colorPicker');
+        const shapeSelector = document.getElementById('shapeSelector');
+        const actionSelector = document.getElementById('actionSelector');
+
+        // Set initial canvas size
+        canvas.width = window.innerWidth - 20;
+        canvas.height = window.innerHeight - 200;
+
+        let drawing = false;
+        let startX, startY;
+
+        function startPosition(e) {
+            drawing = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            draw(e);
+        }
+
+        function endPosition() {
+            drawing = false;
+            context.beginPath();
+        }
+
+        function draw(e) {
+    if (!drawing) return;
+
+    const color = colorPicker.value;
+    const shape = shapeSelector.value;
+
+    context.lineWidth = 5;
+    context.lineCap = 'round';
+    context.strokeStyle = color;
+    context.fillStyle = color;
+
+    if (shape === 'line') {
+        context.lineTo(e.clientX, e.clientY);
+        context.stroke();
+        context.beginPath();
+        context.moveTo(e.clientX, e.clientY);
+    } else if (shape === 'rectangle') {
+        const width = e.clientX - startX;
+        const height = e.clientY - startY;
+        context.fillRect(startX, startY, width, height);
+    } else if (shape === 'circle') {
+        const radius = Math.sqrt(Math.pow(e.clientX - startX, 2) + Math.pow(e.clientY - startY, 2));
+        context.beginPath();
+        context.arc(startX, startY, radius, 0, 2 * Math.PI);
+        context.fill();
+        context.stroke();
+    }
+}
+
+
+        function clearCanvas() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function saveCanvas() {
+            // Use the toDataURL method to get a data URL representing the current state of the canvas
+            const dataUrl = canvas.toDataURL('image/png');
+
+            // Create a download link for the image
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = 'whiteboard.png';
+
+            // Trigger a click on the link to start the download
+            link.click();
+        }
+
+        function performAction() {
+            const selectedAction = actionSelector.value;
+            if (selectedAction === 'clear') {
+                clearCanvas();
+                actionSelector.value = ''; // Reset the dropdown to avoid repeated actions
+            } else if (selectedAction === 'download') {
+                saveCanvas();
+                actionSelector.value = ''; // Reset the dropdown to avoid repeated actions
+            }
+        }
+
+        // Event listeners
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseout', endPosition);
+
+        // Resize canvas when the window is resized
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth - 20;
+            canvas.height = window.innerHeight - 200;
+        });
+    </script>
+</body>
+</html>
