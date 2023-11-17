@@ -6,4 +6,4 @@
 <li>Create rectangles</li>
 <li>Create circles</li>
 <h2>Screenshots from application</h2>
-<img src="WhiteBoard/Images/1.png">
+<img src="https://raw.githubusercontent.com/7fuhr3r/Web-Projects/main/WhiteBoard/Images/1.png">
